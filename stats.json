@@ -1,5 +1,8 @@
 {
-  "updated": null,
+  "updated": "2026-06-09T10:58:31.337Z",
   "total": 0,
-  "byPlatform": { "github": 0, "nostr": null }
+  "byPlatform": {
+    "github": 0,
+    "nostr": null
+  }
 }
