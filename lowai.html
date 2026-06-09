@@ -303,6 +303,7 @@ code {
 .auth.is-sel { border-color: var(--green); background: #00e6760d; }
 .auth .a-emoji { font-size: 1.3rem; line-height: 1; }
 .auth-confirm, .share-confirm { color: var(--green); font-size: .9rem; min-height: 1.4em; margin-top: .8rem; font-weight: 600; }
+.sp-all { display: inline-block; margin-top: .9rem; font-size: .85rem; font-weight: 600; color: var(--accent); }
 .share-row { display: flex; flex-wrap: wrap; gap: .7rem; }
 .share {
   background: transparent; border: 1px solid var(--border); color: var(--text); border-radius: 100px;
@@ -620,14 +621,15 @@ code {
               <button class="sp-close" type="button" aria-label="Close">✕</button>
             </div>
             <div class="auth-grid">
-              <button class="auth" type="button" data-m="GitHub"><span class="a-emoji">🐙</span> GitHub</button>
-              <button class="auth" type="button" data-m="Email"><span class="a-emoji">✉️</span> Email magic link</button>
-              <button class="auth" type="button" data-m="the Fediverse"><span class="a-emoji">🐘</span> Mastodon / Fediverse</button>
-              <button class="auth" type="button" data-m="Nostr"><span class="a-emoji">🔑</span> Nostr key</button>
-              <button class="auth" type="button" data-m="a Web3 wallet"><span class="a-emoji">👛</span> Web3 wallet</button>
-              <button class="auth" type="button" data-m="just your name"><span class="a-emoji">✍️</span> Just a name</button>
+              <button class="auth" type="button" data-action="github" data-m="GitHub"><span class="a-emoji">🐙</span> GitHub</button>
+              <button class="auth" type="button" data-action="nostr" data-m="Nostr"><span class="a-emoji">🔑</span> Nostr key</button>
+              <button class="auth" type="button" data-action="soon" data-m="Email"><span class="a-emoji">✉️</span> Email magic link</button>
+              <button class="auth" type="button" data-action="soon" data-m="the Fediverse"><span class="a-emoji">🐘</span> Mastodon / Fediverse</button>
+              <button class="auth" type="button" data-action="soon" data-m="a Web3 wallet"><span class="a-emoji">👛</span> Web3 wallet</button>
+              <button class="auth" type="button" data-action="soon" data-m="just your name"><span class="a-emoji">✍️</span> Just a name</button>
             </div>
             <p class="auth-confirm" id="authConfirm"></p>
+            <a class="sp-all" href="Supports.html">See all supporters &amp; manage yours →</a>
           </div>
 
           <div class="audience" role="tablist" aria-label="Choose your view">
@@ -1488,11 +1490,21 @@ code {
       });
 
       var authConfirm = document.getElementById('authConfirm');
+      var ISSUE_URL = 'https://github.com/LowAiorg/web/issues/new?labels=support&template=support.yml';
       support.querySelectorAll('.auth').forEach(function (a) {
         a.addEventListener('click', function () {
           support.querySelectorAll('.auth').forEach(function (x) { x.classList.remove('is-sel'); });
           a.classList.add('is-sel');
-          authConfirm.textContent = '✓ Ready to sign as ' + a.dataset.m + ' — identity sign-in arrives with the nety backend.';
+          var act = a.dataset.action;
+          if (act === 'github') {
+            authConfirm.innerHTML = '✓ Opening GitHub — your handle signs you. <a href="Supports.html">See the list →</a>';
+            window.open(ISSUE_URL, '_blank', 'noopener');
+          } else if (act === 'nostr') {
+            authConfirm.innerHTML = '✓ Sign with your own Nostr key on the <a href="Supports.html#nostr-card">supporters page →</a>';
+            window.location.href = 'Supports.html#nostr-card';
+          } else {
+            authConfirm.textContent = 'That channel is coming soon — for now you can sign with GitHub or Nostr.';
+          }
         });
       });
     })();

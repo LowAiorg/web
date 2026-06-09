@@ -1,0 +1,92 @@
+name: Build supporters list
+
+# Rebuilds supporters.json + stats.json from open issues labeled "support".
+# A supporter's GitHub identity IS the verification. Self-removal = close your issue.
+
+on:
+  issues:
+    types: [opened, edited, closed, reopened, deleted, labeled, unlabeled]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: read
+
+concurrency:
+  group: supporters
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'support',
+              per_page: 100,
+            });
+
+            const supporters = issues
+              .filter(i => !i.pull_request)
+              .map(i => {
+                // Optional display name from the issue form; fall back to the handle.
+                let name = i.user.login;
+                const m = (i.body || '').match(/###\s*Display name[^\n]*\n+([^\n#]+)/i);
+                if (m) {
+                  const v = m[1].trim();
+                  if (v && !/^_no response_$/i.test(v)) name = v;
+                }
+                return {
+                  platform: 'github',
+                  handle: i.user.login,
+                  name,
+                  url: i.user.html_url,
+                  avatar: i.user.avatar_url,
+                  date: i.created_at,
+                  issue: i.number,
+                };
+              })
+              .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            const updated = new Date().toISOString();
+
+            fs.writeFileSync(
+              'supporters.json',
+              JSON.stringify({ updated, supporters }, null, 2) + '\n'
+            );
+
+            fs.writeFileSync(
+              'stats.json',
+              JSON.stringify(
+                {
+                  updated,
+                  total: supporters.length,
+                  byPlatform: { github: supporters.length, nostr: null },
+                },
+                null,
+                2
+              ) + '\n'
+            );
+
+            core.info(`Wrote ${supporters.length} GitHub supporter(s).`);
+
+      - name: Commit if changed
+        run: |
+          git config user.name "lowai-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add supporters.json stats.json
+          if git diff --staged --quiet; then
+            echo "No changes."
+          else
+            git commit -m "chore: rebuild supporters list [skip ci]"
+            git push
+          fi

@@ -1,0 +1,29 @@
+name: ✊ I support LowAI
+description: Add yourself to the public supporters list (your GitHub handle verifies you).
+title: "Support: "
+labels: ["support"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for supporting **LowAI** ✊
+
+        Opening this issue adds your GitHub handle to the public supporters list
+        (rebuilt automatically into `supporters.json`).
+
+        **To remove yourself later:** just **close this issue**. Nobody but you can.
+  - type: input
+    id: display
+    attributes:
+      label: Display name (optional)
+      description: How you want to appear. Leave blank to use your GitHub handle.
+      placeholder: e.g. Marc
+    validations:
+      required: false
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Consent
+      options:
+        - label: I'm OK with my GitHub handle appearing on the public supporters page.
+          required: true
